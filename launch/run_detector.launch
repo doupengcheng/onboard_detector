@@ -1,0 +1,23 @@
+<launch>
+	<!-- Livox MID360 -->
+	<!--<include file="$(find livox_ros_driver2)/launch/rviz_MID360.launch"/>-->
+	<!-- 相机（RealSense） -->
+    <include file="$(find realsense2_camera)/launch/rs_camera.launch">
+        <arg name="align_depth" value="true"/>
+    </include>
+
+	<!--pose-->
+	<node pkg="pose_pub_33hz" type="pose_pub" name="pose_pub" output="screen" />
+	<rosparam file="$(find onboard_detector)/cfg/detector_param.yaml" ns="/onboard_detector" />
+	<node pkg="onboard_detector" type="detector_node" name="detector_node" output="screen" /> 
+	<!--3dBOx to 2dimg-->
+	<node pkg="pose_pub_33hz" type="3dto2d" name="node_3dto2d" output="screen" /><!-- made of me-->
+    <!-- <node pkg="onboard_detector" type="yolo_detector_node.py" name="yolo_detector_node" output="screen" /> -->
+    <!-- TO run yolo v11: pip install ultralytics -->
+    <node pkg="onboard_detector" type="yolov11_detector_node.py" name="yolov11_detector_node" output="log" />
+	<!--id make-->
+	<node pkg="ab3dmot_test" type="idmake.py" name="idmake" output="screen" /> <!--made of me-->
+	<!-- <node name="rviz" pkg="rviz" type="rviz" args="-d $(find onboard_detector)/rviz/detector.rviz"/> -->
+	<node pkg="object_get" type="ccf_test1" name="ccf_test1" output="screen" /> <!--made of me-->
+	<node name="rviz" pkg="rviz" type="rviz" args="-d $(find onboard_detector)/rviz/detector_lv.rviz"/>
+</launch>
