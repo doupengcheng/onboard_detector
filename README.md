@@ -4,7 +4,7 @@
 
 参考以下教程安装 RealSense ROS 驱动：
 
-https://blog.csdn.net/youlanshengmeng/article/details/125334427
+[https://blog.csdn.net/youlanshengmeng/article/details/125334427](https://developer.aliyun.com/article/1303849)
 
 按照教程完成驱动安装后，确认能够正常发布彩色图像、深度图像以及相机参数等 ROS Topic。
 
