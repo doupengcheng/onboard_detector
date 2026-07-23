@@ -13,8 +13,8 @@
 ## 2. Livox MID360 配置
 
 参考以下仓库安装 MID360 ROS 驱动：
-
-https://github.com/larics/livox_mid_360_ros_driver
+https://zhuanlan.zhihu.com/p/668966629
+https://blog.csdn.net/2402_82745259/article/details/142638032
 
 完成安装后，确认能够正常发布点云数据。
 
