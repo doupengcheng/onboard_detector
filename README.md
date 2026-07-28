@@ -22,11 +22,12 @@ https://blog.csdn.net/2402_82745259/article/details/142638032
 
 ## 3. LV-DOT 人体检测系统安装
 
-下载并安装 LV-DOT：
 
 https://github.com/Zhefan-Xu/LV-DOT
 
 按照仓库中的说明完成环境配置与编译。
+
+对于其中的内容有修改其中git clone 那个 更换成
 
 完成后运行检测系统，确认能够在 RViz 中正常显示人体三维检测框（3D Bounding Box）。
 
