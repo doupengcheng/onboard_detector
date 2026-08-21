@@ -38,6 +38,13 @@ https://github.com/Zhefan-Xu/LV-DOT
 ## 5. tian jia biyao wen jian 
 1. xuyao an zhuang chong shi bie xi tong suo xu yao yi lia de jianjianku 
 
+mkdir ~/libs && cd ~/libs
+
+wget http://dlib.net/files/dlib-19.22.tar.bz2
+tar xvf dlib-19.22.tar.bz2
+
+echo "export DLIB_ROOT=~/libs/dlib-19.22" >> ~/.bashrc
+source ~/.bashrc
 
 
 
