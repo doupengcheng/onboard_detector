@@ -119,6 +119,9 @@ AB3DMOT
 目标丢失
      ↓
 从当前 ID 中进行重识别
+
+
+/tracking_target_id
      ↓
 找到原目标
      ↓
