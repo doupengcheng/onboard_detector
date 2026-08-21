@@ -27,7 +27,7 @@ https://github.com/Zhefan-Xu/LV-DOT
 
 按照仓库中的说明完成环境配置与编译。
 
-对于其中的内容有修改其中git clone 那个 更换成https://github.com/doupengcheng/onboard_detector.git
+对于其中的内容有修改其中git clone 那个 更换成detection_ws 文件
 
 完成后运行检测系统，确认能够在 RViz 中正常显示人体三维检测框（3D Bounding Box）。
 
@@ -36,7 +36,6 @@ https://github.com/Zhefan-Xu/LV-DOT
 ---
 
 ## 5. 添加重识别库
-1. xuyao an zhuang chong shi bie xi tong suo xu yao yi lia de jianjianku 
 
 mkdir ~/libs && cd ~/libs
 
@@ -186,9 +185,8 @@ ros2 launch onboard_detector test.launch.py
 
 ## 12. RViz 运行效果
 
-系统正常运行后，可以在 RViz 中同时观察：
+系统正常运行后，可以在 rqt 中同时观察：
+<img width="1920" height="1080" alt="Screenshot from 2026-08-21 16-23-27" src="https://github.com/user-attachments/assets/879324a3-fe29-4a37-ab10-df54327acc5b" />
 
 
-<img width="1920" height="1080" alt="Screenshot from 2026-08-21 16-23-27" src="https://github.com/user-attachments/assets/9e43d3a4-a96a-4f99-81e6-ad4d4845ab16" />
-系统说明
 
