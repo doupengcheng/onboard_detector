@@ -1,3 +1,191 @@
+# Installation and Usage Instructions
+
+## 1. RealSense D435i Configuration
+
+Refer to the following tutorial to install the RealSense ROS driver:
+
+https://developer.aliyun.com/article/1303849
+
+After completing the driver installation according to the tutorial, make sure that the color image, depth image, camera parameters, and other ROS topics can be published correctly.
+
+---
+
+## 2. Livox MID360 Configuration
+
+Refer to the following tutorials to install the MID360 ROS driver:
+
+https://zhuanlan.zhihu.com/p/668966629
+
+https://blog.csdn.net/2402_82745259/article/details/142638032
+
+After completing the installation, make sure that the point cloud data can be published correctly.
+
+---
+
+## 3. LV-DOT Human Detection System Installation
+
+https://github.com/Zhefan-Xu/LV-DOT
+
+Follow the instructions in the repository to complete the environment configuration and compilation.
+
+For the `git clone` part, replace the original workspace with the `detection_ws` workspace.
+
+After completion, run the detection system and make sure that the human 3D Bounding Boxes can be displayed correctly in RViz.
+
+Once the detection module can stably output human 3D Bounding Boxes, you can continue installing the subsequent modules.
+
+---
+
+## 5. Add the Re-Identification Library
+
+```bash
+mkdir ~/libs && cd ~/libs
+
+wget http://dlib.net/files/dlib-19.22.tar.bz2
+tar xvf dlib-19.22.tar.bz2
+
+echo "export DLIB_ROOT=~/libs/dlib-19.22" >> ~/.bashrc
+source ~/.bashrc
+```
+
+---
+
+## 6. System Launch and Verification
+
+Enter the ROS2 workspace:
+
+```bash
+cd ~/detection_ws
+```
+
+Launch the system:
+
+```bash
+ros2 launch onboard_detector test.launch.py
+```
+
+After the system starts successfully, the following should be visible in **RViz**:
+
+* LiDAR point cloud
+* Camera-based human detection results
+* Fused human 3D Bounding Boxes
+* An independent ID for each 3D Bounding Box
+* Re-Identification module results
+
+### Re-Identification Module Verification
+
+After the system starts, the Re-Identification module automatically selects the **nearest person directly in front of the robot** as the initial tracking target.
+
+Once the target is successfully selected, a **green bounding box** will appear, indicating that the target selection has been completed.
+
+The system will then continuously track the target based on its ID.
+
+> If all of the above results can be displayed correctly, the system is running normally and you can continue with subsequent experiments.
+
+---
+
+## 7. System Architecture
+
+The system mainly consists of three ROS2 functional modules:
+
+1. **`onboard_detector`**: Human 3D Bounding Box generation
+2. **`robotpose`**: Target ID assignment and 3D → 2D projection
+3. **Re-Identification Module**: Target selection, target loss detection, and re-identification
+
+---
+
+## 8. `onboard_detector`
+
+`onboard_detector` is mainly responsible for fusing **YOLO human detection results, Livox MID360 point cloud data, and robot pose information** to generate the final human **3D Bounding Boxes**.
+
+### Main Topics
+
+| Topic                                    | Description                              |
+| ---------------------------------------- | ---------------------------------------- |
+| `/yolo_detector/detected_bounding_boxes` | Human 2D Bounding Boxes detected by YOLO |
+| `/pointcloud`                            | Livox MID360 point cloud data            |
+| `/mavros/local_position/pose`            | Robot pose information                   |
+| `/onboard_detector/dynamic_bboxes`       | Final human 3D Bounding Boxes            |
+
+---
+
+## 9. `robotpose`
+
+`robotpose` is mainly responsible for:
+
+* Assigning an independent ID to each 3D Bounding Box
+* Projecting the 3D Bounding Boxes onto the 2D camera image
+* Obtaining the distance information between the target and the robot
+
+### Main Topics
+
+| Topic                            | Description                                                       |
+| -------------------------------- | ----------------------------------------------------------------- |
+| `/ab3dmot/tracks_array`          | Assigns and maintains an independent ID for each 3D Bounding Box  |
+| `/projected_boxes_with_distance` | Outputs the projected 2D Box, target ID, and distance information |
+
+### Data Processing Flow
+
+Therefore, different human 3D Bounding Boxes can be displayed with their own independent target IDs in RViz.
+
+---
+
+## 10. Re-Identification Module
+
+The Re-Identification module is mainly responsible for **automatically selecting the tracking target and finding the original target again after it is lost**.
+
+### ① Initial Target Selection
+
+After the system starts, it automatically selects:
+
+> **The nearest person directly in front of the robot**
+
+as the initial tracking target.
+
+After the target is successfully selected, a **green bounding box** will be displayed.
+
+### ② Continuous Tracking
+
+After the target is determined, the system records the target ID:
+
+```text
+/tracking_target_id
+```
+
+The system then continuously obtains the target's position and distance information based on this ID.
+
+### ③ Target Loss
+
+During actual tracking, the following situations may occur:
+
+* The person is occluded by other pedestrians
+* The target temporarily leaves the camera's field of view
+* The AB3DMOT target ID is lost or changes
+
+In these cases, the system enters the target Re-Identification stage.
+
+### ④ Target Re-Identification
+
+The system searches among the candidate IDs currently detected in the image and finds the person most similar to the original tracking target.
+
+After a successful match, the system obtains the target ID again and resumes tracking.
+
+---
+
+## 11. Main Topics Overview
+
+| Topic                                    | Module              | Description                       |
+| ---------------------------------------- | ------------------- | --------------------------------- |
+| `/yolo_detector/detected_bounding_boxes` | YOLO                | Human 2D detection Bounding Boxes |
+| `/pointcloud`                            | LiDAR               | MID360 point cloud data           |
+| `/mavros/local_position/pose`            | Localization        | Robot pose                        |
+| `/onboard_detector/dynamic_bboxes`       | onboard_detector    | Human 3D Bounding Boxes           |
+| `/ab3dmot/tracks_array`                  | robotpose / AB3DMOT | 3D Box ID tracking results        |
+| `/projected_boxes_with_distance`         | robotpose           | 2D Box, ID, and distance          |
+| `/tracking_target_id`                    | Re-ID               | Current tracking target ID        |
+
+中文：
+
 # 安装与运行说明
 
 ## 1. RealSense D435i 配置
@@ -181,12 +369,6 @@ ros2 launch onboard_detector test.launch.py
 | `/projected_boxes_with_distance`         | robotpose           | 2D Box、ID 和距离      |
 | `/tracking_target_id`                    | Re-ID               | 当前跟踪目标 ID          |
 
----
-
-## 12. RViz 运行效果
-
-系统正常运行后，可以在 rqt 中同时观察：
-<img width="1920" height="1080" alt="Screenshot from 2026-08-21 16-23-27" src="https://github.com/user-attachments/assets/879324a3-fe29-4a37-ab10-df54327acc5b" />
 
 
 
