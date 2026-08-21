@@ -35,66 +35,91 @@ https://github.com/Zhefan-Xu/LV-DOT
 
 ---
 
-## 5. 修改 run_detector.launch
+## 5. tian jia biyao wen jian 
+1. xuyao an zhuang chong shi bie xi tong suo xu yao yi lia de jianjianku 
 
-在运行检测系统之前，请先注释以下节点：
 
-```xml
-<node pkg="pose_pub_33hz" type="pose_pub" name="pose_pub" output="screen" />
 
-<node pkg="pose_pub_33hz" type="3dto2d"
-      name="node_3dto2d"
-      output="screen" />
 
-<node pkg="ab3dmot_test"
-      type="idmake.py"
-      name="idmake"
-      output="screen" />
 
-<node pkg="object_get"
-      type="ccf_test1"
-      name="ccf_test1"
-      output="screen" />
-```
+2.
 
-例如：
-
-```xml
-<!--
-<node pkg="pose_pub_33hz" type="pose_pub" name="pose_pub" output="screen" />
-
-<node pkg="pose_pub_33hz" type="3dto2d"
-      name="node_3dto2d"
-      output="screen" />
-
-<node pkg="ab3dmot_test"
-      type="idmake.py"
-      name="idmake"
-      output="screen" />
-
-<node pkg="object_get"
-      type="ccf_test1"
-      name="ccf_test1"
-      output="screen" />
--->
-```
-
-保存后运行：
-
-```bash
-roslaunch onboard_detector run_detector.launch
-```
-
----
 
 ## 6. 验证检测结果
-
+cd you workspace
+ros2 launch onboard_detector test.launch.py 
 运行成功后，应能够在 RViz 中观察到：
 
 * LiDAR 点云
 * 摄像头检测结果
 * 融合后的三维人体检测框（3D Bounding Box）
+* mei yige 3d box zai rviz zhong neng gou you zi ji de du li id
+* yan zheng chong shibie mo kuai shou xian chongshi bie bufen keyi zidong xuan ze zheng qian fang zui jin de ren zuo wei genzong de mubiao (you lu se kuang de shihou dai bian xuanze wanbi)
+  能够正常显示后，说明正常，可以继续
 
-当人体三维检测框能够正常显示后，说明检测模块运行正常，可以继续
 
-完成后续人体跟随系统的部署。
+## 7. topic jie du 
+<img width="1920" height="1080" alt="Screenshot from 2026-08-21 16-23-27" src="https://github.com/user-attachments/assets/9e43d3a4-a96a-4f99-81e6-ad4d4845ab16" />
+系统说明
+
+本系统主要分为三个 ROS2 功能模块：onboard_detector、robotpose 和重识别模块。
+
+1. onboard_detector
+
+onboard_detector 主要负责人体 3D Bounding Box 的生成。
+
+主要使用以下 Topic：
+
+Topic	作用
+/yolo_detector/detected_bounding_boxes	YOLO 检测得到的人体 2D Box
+/pointcloud	Livox MID360 点云信息
+/mavros/local_position/pose	机器人位姿信息
+/onboard_detector/dynamic_bboxes	最终生成的人体 3D Box
+
+处理流程：
+
+YOLO 2D Box + MID360 点云 + 机器人位姿
+                    ↓
+             onboard_detector
+                    ↓
+              人体 3D Box
+2. robotpose
+
+robotpose 主要负责目标 ID 分配以及 3D Box 到 2D Box 的转换。
+
+主要 Topic：
+
+Topic	作用
+/ab3dmot/tracks_array	为每个 3D Box 分配独立 ID
+/projected_boxes_with_distance	将 3D Box 投影到 2D 图像，并提供 ID 和距离信息
+
+处理流程：
+
+人体 3D Box
+    ↓
+AB3DMOT
+    ↓
+分配 ID
+    ↓
+3D → 2D 投影
+    ↓
+2D Box + ID + Distance
+3. 重识别模块
+
+重识别模块主要负责自动选取和恢复跟随目标。
+
+系统首先自动选择目标人物，并根据目标 ID 持续获取目标位置。
+
+当目标由于遮挡、暂时消失或 ID 丢失而无法继续跟踪时，系统会从当前画面中已有的 ID 中寻找与原目标最相似的人，并重新恢复跟随。
+
+自动选择目标
+     ↓
+根据 ID 持续跟踪
+     ↓
+目标丢失
+     ↓
+从当前 ID 中进行重识别
+     ↓
+找到原目标
+     ↓
+恢复跟随
